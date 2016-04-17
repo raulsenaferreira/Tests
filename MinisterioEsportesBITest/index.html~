@@ -167,7 +167,7 @@
 
 	function carregaGrafo(path){
 		$.getScript( path, function( data, textStatus, jqxhr ) {
-		  console.log( data ); // Data returned
+		  //console.log( data ); // Data returned
 		});
 	}
 
