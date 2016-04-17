@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>BI</title>
+	<script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
+	<script type="text/javascript" src="jquery-2.2.3.min.js"></script>
+	
+	<style>
+		.barra.vermelho { fill: red; }
+		.barra.laranja { fill: orange; }
+		.barra.amarela { fill: yellow; }
+		.barra.azulEscuro { fill: purple; }
+		.barra.azul { fill: blue; }
+		.barra.cinza { fill: gray; }
+		.barra.preto{color: #000000;}
+		.barra.simples{fill-opacity: .6;  fill: #aad; stroke: #000;}
+	</style>
+
+</head>
+<body>
+	<h4>Dados do Ministério dos Esportes - Lei de incentivo ao esporte.</h4>
+	Escolha o ano da consulta:
+	<select class="check">
+		<option value="--" selected>Ano</option>
+	  <option value="2008">2008</option> 
+	  <option value="2009">2009</option>
+	  <option value="2010">2010</option>
+	<option value="2011">2011</option> 
+	  <option value="2012">2012</option>
+	  <option value="2013">2013</option>
+	<option value="2014">2014</option> 
+	  <option value="2016">2016</option>
+	</select>
+	<h2>Top 20 Empresas que mais doaram para projetos ligados ao esporte</h2>
+	<div id="chart"></div>
+	<h2>Top 20 Projetos ligados ao esporte que mais arrecadaram doacoes de empresas</h2>
+	<div id="chart2"></div>
+</body>
+
+	<script type="text/javascript">
+	function carregaGrafico1(path){
+		var w = 1000,
+		    h = 500;
+
+		var svg = d3.select("#chart")
+			.append("svg")
+			.attr("width", w)
+			.attr("height", h);
+	
+		d3.json(path, function(json) {
+	
+			var dataa = json["Valor Captador"];
+			var data=[]
+			cont=0;
+			for (var d in dataa) {
+				cont++;
+				if(cont==20)
+					break;
+				else{
+					obj = {"label":d, "n":dataa[d]};
+					data.push(obj);
+				}
+			}
+	
+			var max_n = 0;
+			for (var d in data) {
+				max_n = Math.max(data[d].n, max_n);
+			}
+		
+			var dx = w / max_n;
+			var dy = h / data.length;
+	
+			// bars
+			var bars = svg.selectAll(".barra")
+				.data(data)
+				.enter()
+				.append("rect")
+				.attr("class", function(d, i) {
+					return "barra simples";
+				})
+				.attr("x", function(d, i) {return 0;})
+				.attr("y", function(d, i) {return dy*i;})
+				.attr("width", function(d, i) {return (dx*d.n)})
+				.attr("height", dy);
+	
+			// labels
+			var text = svg.selectAll("text")
+				.data(data)
+				.enter()
+				.append("text")
+				.attr("class", function(d, i) {
+					return "barra preto"				
+				})
+				.attr("x", 5)
+				.attr("y", function(d, i) {return dy*i + 15;})
+				.text( function(d) {str = d.n+""; return d.label+" (R$ " + str.replace('.',',')  + " doados.)";})
+				.attr("font-size", "12px")
+				.style("font-weight", "bold");
+		});
+	}
+
+
+	function carregaGrafico2(path){
+
+		var w = 1000,
+		    h = 500;
+
+		var svg = d3.select("#chart2")
+			.append("svg")
+			.attr("width", w)
+			.attr("height", h);
+	
+		d3.json(path, function(json) {
+	
+			var dataa = json["Valor Captador"];
+			var data=[]
+			cont=0;
+			for (var d in dataa) {
+				cont++;
+				if(cont==20)
+					break;
+				else{
+					obj = {"label":d, "n":dataa[d]};
+					data.push(obj);
+				}
+			}
+	
+			var max_n = 0;
+			for (var d in data) {
+				max_n = Math.max(data[d].n, max_n);
+			}
+		
+			var dx = w / max_n;
+			var dy = h / data.length;
+	
+			// bars
+			var bars = svg.selectAll("#chart2 .barra")
+				.data(data)
+				.enter()
+				.append("rect")
+				.attr("class", function(d, i) {
+					return "barra simples";
+				})
+				.attr("x", function(d, i) {return 0;})
+				.attr("y", function(d, i) {return dy*i;})
+				.attr("width", function(d, i) {return (dx*d.n)})
+				.attr("height", dy);
+	
+			// labels
+			var text = svg.selectAll("text")
+				.data(data)
+				.enter()
+				.append("text")
+				.attr("class", function(d, i) {
+					return "barra preto"				
+				})
+				.attr("x", 5)
+				.attr("y", function(d, i) {return dy*i + 15;})
+				.text( function(d) {str = d.n+""; return d.label+" (R$ " + str.replace('.',',')  + " arrecadados)";})
+				.attr("font-size", "12px")
+				.style("font-weight", "bold");
+		});
+	}
+
+	$(function(){
+    
+		$('.check').change(function(){
+		  	var data= $(this).val();
+			if(data!="--"){
+				var pathEmpresa="patrocinado/empresasJSON/corpDonationAmount_"+data+".json";
+				var pathProjeto=path="patrocinado/projetosJSON/projDonationAmount_"+data+".json";
+				$("#chart").html("");
+				$("#chart2").html("");
+				carregaGrafico1(pathEmpresa);
+				carregaGrafico2(pathProjeto);
+			}            
+		});
+	});
+	
+	
+	
+	
+	</script>
+</html>
