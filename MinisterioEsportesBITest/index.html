@@ -17,6 +17,12 @@
 		.barra.cinza { fill: gray; }
 		.barra.preto{color: #000000;}
 		.barra.simples{fill-opacity: .6;  fill: #aad; stroke: #000;}
+		#grafo{
+			width: 1200px;
+            height: 1200px;
+            border: 1px solid #444444;
+            background-color: #222222;
+		}
 	</style>
 
 </head>
@@ -38,11 +44,14 @@
 	<div id="chart"></div>
 	<h2>Top 20 Projetos ligados ao esporte que mais arrecadaram doacoes de empresas</h2>
 	<div id="chart2"></div>
+	<h2>Rede de doacoes</h2><h5>(Grafo demora um pouco a carregar...)</h5>
+	<h4>Os losangos representam as empresas doadoras. Os circulos representam os projetos que recebem as doacoes. Clique nos objetos para ver mais informacoes.</h4>
+	<div id="grafo"></div>
 </body>
 
 	<script type="text/javascript">
 	function carregaGrafico1(path){
-		var w = 1000,
+		var w = 1200,
 		    h = 500;
 
 		var svg = d3.select("#chart")
@@ -105,7 +114,7 @@
 
 	function carregaGrafico2(path){
 
-		var w = 1000,
+		var w = 1200,
 		    h = 500;
 
 		var svg = d3.select("#chart2")
@@ -165,9 +174,80 @@
 		});
 	}
 
+	var network;
 	function carregaGrafo(path){
-		$.getScript( path, function( data, textStatus, jqxhr ) {
-		  console.log( data ); // Data returned
+		$.getJSON( path, function( data, textStatus, jqxhr ) {
+			var nodes = new vis.DataSet(data[0].nodes);
+			var edges = new vis.DataSet(data[1].edges);
+
+			// create a network
+    		var container = document.getElementById('grafo');
+			var data = {
+				nodes: nodes,
+				edges: edges
+			};
+			// legend
+			  /*var x = - container.clientWidth / 2 + 50;
+			  var y = - container.clientHeight / 2 + 50;
+			  var step = 70;
+			  nodes.push({id: 1000, x: x, y: y, label: 'Empresa', group: 'empresa', value: 1, fixed: true, physics:false});
+			  nodes.push({id: 1001, x: x, y: y + step, label: 'Projeto', group: 'projeto', value: 1, fixed: true,  physics:false});*/
+
+			var options = {
+				layout: {
+					improvedLayout:false,
+				},
+				nodes: {
+					scaling: {
+					  min: 10,
+					  max: 30
+					},
+					font: {
+					  size: 12,
+					  face: 'Tahoma',
+					  color: '#ffffff'
+					}
+				},
+				edges: {
+				    width: 0.3,
+					color: {inherit: 'from'},
+					smooth: {
+					  type: 'continuous'
+					}
+				},
+				groups: {
+				    empresa: {
+				        color: {background:'red',border:'white'},
+				        shape: 'diamond'
+				    },
+				    projeto: {
+				        shape: 'dot',
+				        color: 'cyan'
+				    }
+				}/*,
+				  physics: {
+					enabled: false,
+					stabilization: false,
+					barnesHut: {
+					  gravitationalConstant: -8000,
+					  springConstant: 0.001,
+					  springLength: 100
+					}
+				  }*/,
+				  interaction: {
+					tooltipDelay: 200,
+					hideEdgesOnDrag: true
+				  }
+			};
+			var network = new vis.Network(container, data, options);
+			network.on( 'click', function(properties) {
+				var clickedNode = nodes.get(properties.nodes);
+				var grupo = clickedNode[0].group;
+				var op = "Doou";
+				if(grupo=="projeto") op="Recebeu";
+				var msg = clickedNode[0].title + " --- "+op+" R$ "+clickedNode[0].value;
+				alert(msg);
+			});
 		});
 	}
 
@@ -181,6 +261,7 @@
 				var pathGrafo="patrocinado/grafosJSON/pathNetworkDonation_"+data+".json";
 				$("#chart").html("");
 				$("#chart2").html("");
+				$("#grafo").html("");
 				carregaGrafico1(pathEmpresa);
 				carregaGrafico2(pathProjeto);
 				carregaGrafo(pathGrafo);
