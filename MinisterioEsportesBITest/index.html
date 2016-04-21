@@ -23,6 +23,12 @@
             border: 1px solid #444444;
             background-color: #222222;
 		}
+		#legend{
+			background: #ffffff none repeat scroll 0 0;
+			color: #000000;
+			margin-top: 70px;
+			position: absolute;
+		}
 	</style>
 
 </head>
@@ -46,7 +52,7 @@
 	<div id="chart2"></div>
 	<h2>Rede de doacoes</h2><h5>(Grafo demora um pouco a carregar...)</h5>
 	<h4>Os losangos representam as empresas doadoras. Os circulos representam os projetos que recebem as doacoes. Clique nos objetos para ver mais informacoes.</h4>
-	<div id="grafo"></div>
+	<span id="legend"></span><div id="grafo"></div>
 </body>
 
 	<script type="text/javascript">
@@ -186,16 +192,10 @@
 				nodes: nodes,
 				edges: edges
 			};
-			// legend
-			  /*var x = - container.clientWidth / 2 + 50;
-			  var y = - container.clientHeight / 2 + 50;
-			  var step = 70;
-			  nodes.push({id: 1000, x: x, y: y, label: 'Empresa', group: 'empresa', value: 1, fixed: true, physics:false});
-			  nodes.push({id: 1001, x: x, y: y + step, label: 'Projeto', group: 'projeto', value: 1, fixed: true,  physics:false});*/
 
 			var options = {
 				layout: {
-					improvedLayout:false,
+					improvedLayout:false
 				},
 				nodes: {
 					scaling: {
@@ -212,7 +212,8 @@
 				    width: 0.3,
 					color: {inherit: 'from'},
 					smooth: {
-					  type: 'continuous'
+						enabled: false
+					  //type: 'continuous'
 					}
 				},
 				groups: {
@@ -224,29 +225,48 @@
 				        shape: 'dot',
 				        color: 'cyan'
 				    }
-				}/*,
-				  physics: {
-					enabled: false,
-					stabilization: false,
-					barnesHut: {
-					  gravitationalConstant: -8000,
-					  springConstant: 0.001,
-					  springLength: 100
-					}
-				  }*/,
+				},
+				physics: {
+						forceAtlas2Based: {
+							gravitationalConstant: -26,
+							centralGravity: 0.005,
+							springLength: 230,
+							springConstant: 0.18,
+							avoidOverlap: 1.5
+
+						},
+						maxVelocity: 146,
+						solver: 'forceAtlas2Based',
+						timestep: 0.35,
+						stabilization: {
+							enabled: true,
+							iterations: 1000,
+							updateInterval: 25
+						}
+
+					},
 				  interaction: {
-					tooltipDelay: 200,
+					navigationButtons: true,
 					hideEdgesOnDrag: true
 				  }
 			};
 			var network = new vis.Network(container, data, options);
 			network.on( 'click', function(properties) {
+				$("#legend").html("");
 				var clickedNode = nodes.get(properties.nodes);
-				var grupo = clickedNode[0].group;
-				var op = "Doou";
-				if(grupo=="projeto") op="Recebeu";
-				var msg = clickedNode[0].title + " --- "+op+" R$ "+clickedNode[0].value;
-				alert(msg);
+				var clickedEdge = edges.get(properties.edges);
+				if(clickedNode!=null && clickedNode[0]!=undefined){
+					var op = "Doou";
+					if(clickedNode[0].group!==null && clickedNode[0].group=="projeto"){
+						op="Recebeu";
+					}
+					$("#legend").html("<p>"+clickedNode[0].title + " --- "+op+" R$ "+clickedNode[0].value+"</p>");
+					
+				}
+				//if(clickedEdge!=null) alert(clickedEdge[0].value);
+			});
+			network.on("stabilizationIterationsDone", function () {
+				network.setOptions({ physics: false });
 			});
 		});
 	}

@@ -104,7 +104,7 @@ for i in range(8,17):#2008 a 2016
                 idProj = int(projDonationAmount["id"][projName]+corpDonationAmountSize)
                 title = str(mapNet[k]).replace(".", ",")
                 title = "R$ {}".format(title)
-                edges.append({"from":idCorp, "to":idProj, "value":mapNet[k], "label":title})
+                edges.append({"from":idCorp, "to":idProj, "value":title})
                 
 
         listJSON = []
